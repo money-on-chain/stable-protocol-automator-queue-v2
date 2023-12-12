@@ -95,6 +95,12 @@ class ConnectionManager(BaseConnectionManager):
                     account = Account().from_key(private_key)
                     accounts.append(account)
 
+        if accounts:
+            for acc in accounts:
+                self.log.info("Added account address: {0}".format(acc.address))
+        else:
+            self.log.info("No address account added!")
+
         self.accounts = accounts
 
     def set_default_account(self, index):

@@ -1,6 +1,11 @@
 [
     {
       "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
       "name": "BucketAlreadyRegistered",
       "type": "error"
     },
@@ -17,11 +22,6 @@
     {
       "inputs": [],
       "name": "InvalidValue",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NotAllowOnNoneEmptyQueue",
       "type": "error"
     },
     {
@@ -166,7 +166,7 @@
         },
         {
           "indexed": false,
-          "internalType": "enum MocQueue.OperType",
+          "internalType": "enum MocQueueExecFees.OperType",
           "name": "operType_",
           "type": "uint8"
         }
@@ -633,7 +633,7 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "tp",
+          "name": "tp_",
           "type": "address"
         },
         {
@@ -999,6 +999,25 @@
     {
       "inputs": [
         {
+          "internalType": "enum MocQueueExecFees.OperType",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "name": "execFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "executionFeeRecipient",
           "type": "address"
@@ -1016,6 +1035,30 @@
         {
           "internalType": "uint256",
           "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum MocQueueExecFees.OperType",
+          "name": "operType_",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "value_",
+          "type": "uint256"
+        }
+      ],
+      "name": "getAndVerifyExecFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "currentExecFee",
           "type": "uint256"
         }
       ],
@@ -1231,23 +1274,10 @@
     },
     {
       "inputs": [],
-      "name": "mintTCandTPExecFee",
+      "name": "mocOperations",
       "outputs": [
         {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "mocCore",
-      "outputs": [
-        {
-          "internalType": "contract MocCARC20Deferred",
+          "internalType": "contract MocOperations",
           "name": "",
           "type": "address"
         }
@@ -1690,7 +1720,7 @@
       "name": "opersInfo",
       "outputs": [
         {
-          "internalType": "enum MocQueue.OperType",
+          "internalType": "enum MocQueueExecFees.OperType",
           "name": "operType",
           "type": "uint8"
         },
@@ -2237,22 +2267,9 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "redeemTCandTPExecFee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
-          "internalType": "contract MocCARC20Deferred",
+          "internalType": "contract MocOperations",
           "name": "bucket_",
           "type": "address"
         }
@@ -2371,97 +2388,6 @@
     },
     {
       "inputs": [],
-      "name": "swapTCforTPExecFee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "swapTPforTCExecFee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "swapTPforTPExecFee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "tcMintExecFee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "tcRedeemExecFee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "tpMintExecFee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "tpRedeemExecFee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "unpause",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -2557,5 +2483,9 @@
       "outputs": [],
       "stateMutability": "payable",
       "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
     }
   ]

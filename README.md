@@ -42,7 +42,7 @@ If you want to use your custom private node pass as environment settings, before
 Build, change path to correct environment
 
 ```
-docker build -t automator -f Dockerfile --build-arg CONFIG=./enviroments/flipago-testnet/config.json .
+docker build -t automator -f Dockerfile --build-arg CONFIG=./enviroments/flipmoney-testnet/config.json .
 ```
 
 Run, replace ACCOUNT_PK_SECRET  with your private key owner of the account

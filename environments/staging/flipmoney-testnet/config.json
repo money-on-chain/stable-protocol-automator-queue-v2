@@ -10,7 +10,7 @@
       "gas_limit": 4500000,
       "fee_recipient": "0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3",
       "cloudwatch": {
-        "metric_name": "FLIPAGO-QUEUE-TESTNET",
+        "metric_name": "FLIPMONEY-QUEUE-TESTNET",
         "dimensions_name": "JOBS",
         "dimensions_value": "Error",
         "namespace": "MOC/EXCEPTIONS"
@@ -18,7 +18,7 @@
     }
   },
   "addresses": {
-    "MocQueue": "0x52E2384F1Ed99c13e78b65c0EA47bE3d0dF0E9fF",
+    "MocQueue": "0x8cB53d45dac0f3dB1f7413e2356395E8CbEc2acD",
     "Multicall2": "0xaf7be1ef9537018feda5397d9e3bb9a1e4e27ac8"
   }
 }

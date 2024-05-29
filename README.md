@@ -8,7 +8,7 @@ run async of the app, and call directly to the contract through node.
 
 ### Currents tasks
 
- 1. Queue Execute
+ 1. Queue Execute. Execute queued operations.
   
 ### Usage
 
@@ -53,3 +53,19 @@ docker run -d \
 --env ACCOUNT_PK_SECRET=asdfasdfasdf \
 automator
 ```
+
+
+### Contracts
+
+
+**Stable protocol core v2**
+
+*[https://github.com/money-on-chain/stable-protocol-core-v2](https://github.com/money-on-chain/stable-protocol-core-v2)*
+
+**RIF on Chain implementation v2**
+
+*[https://github.com/money-on-chain/stable-protocol-roc-v2](https://github.com/money-on-chain/stable-protocol-roc-v2)*
+
+**Flipmoney implementation v2**
+
+*[https://github.com/money-on-chain/stable-protocol-roc-v2](https://github.com/money-on-chain/stable-protocol-roc-v2)*

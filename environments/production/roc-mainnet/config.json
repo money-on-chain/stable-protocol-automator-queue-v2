@@ -8,7 +8,7 @@
       "interval": 2,
       "wait_timeout": 240,
       "gas_limit": 2000000,
-      "fee_recipient": "0xEA14c08764c9e5F212c916E11a5c47Eaf92571e4",
+      "fee_recipient": "0x8d7c61aab2db42739560682a4f949765ce48feaa",
       "cloudwatch": {
         "metric_name": "ROC-QUEUE-MAINNET",
         "dimensions_name": "JOBS",

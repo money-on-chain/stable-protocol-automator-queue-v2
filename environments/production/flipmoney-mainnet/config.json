@@ -2,19 +2,14 @@
   "uri": "https://public-node.rsk.co",
   "chain_id": 30,
   "timeout": 180,
-  "gas_price_multiply_factor": 1.01,
+  "max_fee_per_gas": 80000000000,
+  "max_priority_fee_per_gas": 2000000000,
   "tasks": {
     "execute": {
       "interval": 5,
       "wait_timeout": 240,
       "gas_limit": 2500000,
-      "fee_recipient": "0xdbB17D400aaE10dC96F4fcCbA8E528F959336637",
-      "cloudwatch": {
-        "metric_name": "FLIPMONEY-QUEUE",
-        "dimensions_name": "JOBS",
-        "dimensions_value": "Error",
-        "namespace": "MOC/EXCEPTIONS"
-      }
+      "fee_recipient": "0xdbB17D400aaE10dC96F4fcCbA8E528F959336637"
     }
   },
   "addresses": {

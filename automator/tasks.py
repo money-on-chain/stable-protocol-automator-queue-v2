@@ -10,7 +10,7 @@ from .logger import log
 from .utils import aws_put_metric_heart_beat
 
 
-__VERSION__ = '1.0.2'
+__VERSION__ = '1.0.3'
 
 
 log.info("Starting Stable Protocol Queue Automator version {0}".format(__VERSION__))
@@ -51,14 +51,12 @@ class Automator(PendingTransactionsTasksManager):
             # get gas price from node
             node_gas_price = decimal.Decimal(Web3.from_wei(web3.eth.gas_price, 'ether'))
 
-            # Multiply factor of the using gas price
-            calculated_gas_price = node_gas_price * decimal.Decimal(self.config['gas_price_multiply_factor'])
-
             try:
                 tx_hash = self.contracts_loaded["MocQueue"].execute(
                     self.config['tasks']['execute']['fee_recipient'],
                     gas_limit=self.config['tasks']['execute']['gas_limit'],
-                    gas_price=int(calculated_gas_price * 10 ** 18),
+                    max_fee_per_gas=self.config['max_fee_per_gas'],
+                    max_priority_fee_per_gas=self.config['max_priority_fee_per_gas'],
                     nonce=nonce
                 )
             except ValueError as err:
@@ -69,13 +67,13 @@ class Automator(PendingTransactionsTasksManager):
                 new_tx = dict()
                 new_tx['hash'] = tx_hash
                 new_tx['timestamp'] = datetime.datetime.now()
-                new_tx['gas_price'] = calculated_gas_price
+                new_tx['gas_price'] = node_gas_price
                 new_tx['nonce'] = nonce
                 new_tx['timeout'] = self.config['tasks']['execute']['wait_timeout']
                 task_result['pending_transactions'].append(new_tx)
 
                 log.info("Task :: {0} :: Sending TX :: Hash: [{1}] Nonce: [{2}] Gas Price: [{3}]".format(
-                    task.task_name, Web3.to_hex(new_tx['hash']), new_tx['nonce'], int(calculated_gas_price * 10 ** 18)))
+                    task.task_name, Web3.to_hex(new_tx['hash']), new_tx['nonce'], int(node_gas_price * 10 ** 18)))
 
         else:
             log.info("Task :: {0} :: No!".format(task.task_name))

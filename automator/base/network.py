@@ -238,14 +238,12 @@ class ConnectionManager(BaseConnectionManager):
         if not nonce:
             nonce = self.web3.eth.get_transaction_count(self.accounts[default_account].address, "pending")
 
-        if not gas_price:
-            gas_price = self.gas_price
-
         transaction_dict = {
             'chainId': self.chain_id,
             'nonce': nonce,
-            'gasPrice': gas_price,
-            'value': value
+            'value': value,
+            'maxFeePerGas': max_fee_per_gas,
+            'maxPriorityFeePerGas': max_priority_fee_per_gas
         }
 
         if gas_limit:

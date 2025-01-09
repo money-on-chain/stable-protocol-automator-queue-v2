@@ -2,19 +2,14 @@
   "uri": "https://public-node.rsk.co",
   "chain_id": 30,
   "timeout": 180,
-  "gas_price_multiply_factor": 1.01,
+  "max_fee_per_gas": 80000000000,
+  "max_priority_fee_per_gas": 2000000000,
   "tasks": {
     "execute": {
       "interval": 2,
       "wait_timeout": 240,
       "gas_limit": 1600000,
-      "fee_recipient": "0x8D7c61aab2Db42739560682A4f949765Ce48feaA",
-      "cloudwatch": {
-        "metric_name": "ROC-QUEUE-MAINNET",
-        "dimensions_name": "JOBS",
-        "dimensions_value": "Error",
-        "namespace": "MOC/EXCEPTIONS"
-      }
+      "fee_recipient": "0x8D7c61aab2Db42739560682A4f949765Ce48feaA"
     }
   },
   "addresses": {

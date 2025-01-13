@@ -10,7 +10,7 @@ from .logger import log
 from .utils import aws_put_metric_heart_beat
 
 
-__VERSION__ = '1.0.3'
+__VERSION__ = '1.0.4'
 
 
 log.info("Starting Stable Protocol Queue Automator version {0}".format(__VERSION__))

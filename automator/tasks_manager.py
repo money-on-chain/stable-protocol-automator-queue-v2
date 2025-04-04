@@ -220,7 +220,7 @@ class PendingTransactionsTasksManager(TransactionsTasksManager):
 
                         # timeout pending transactions
                         log.error("Task :: {0} :: {1} [{2}]".format(
-                            task.task_name, label_timeout, Web3.from_wei(tx['hash'], 'gwei')))
+                            task.task_name, label_timeout, Web3.to_hex(tx['hash'])))
 
                         clear = True
 

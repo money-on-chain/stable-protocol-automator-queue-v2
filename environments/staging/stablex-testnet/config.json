@@ -8,7 +8,7 @@
     "execute": {
       "interval": 30,
       "wait_timeout": 600,
-      "gas_limit": 900000,
+      "gas_limit": 3000000,
       "fee_recipient": "0x39549Dd5E2B5Eacd1381B1cCeDC13a06C0cB6E99"
     }
   },

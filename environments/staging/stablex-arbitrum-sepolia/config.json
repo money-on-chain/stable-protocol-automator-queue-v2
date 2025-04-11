@@ -10,38 +10,18 @@
       "gas_limit": 2500000,
       "fee_recipient": "0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3"
     },
-    "execute_micro_liquidation": [
-      {
-        "interval": 5,
-        "wait_timeout": 240,
-        "gas_limit": 2500000,
-        "MocBucket": "0x0533389241E4409175246c52A005E11d666f68cB",
-        "fee_recipient": "0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3"
-      },
-      {
-        "interval": 5,
-        "wait_timeout": 240,
-        "gas_limit": 2500000,
-        "MocBucket": "0xFe9C958d1A34adfdb78eBa95F8D546E5A946d0C6",
-        "fee_recipient": "0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3"
-      }
-    ],
-    "execute_liquidation": [
-      {
-        "interval": 5,
-        "wait_timeout": 240,
-        "gas_limit": 2500000,
-        "MocBucket": "0x0533389241E4409175246c52A005E11d666f68cB",
-        "fee_recipient": "0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3"
-      },
-      {
-        "interval": 5,
-        "wait_timeout": 240,
-        "gas_limit": 2500000,
-        "MocBucket": "0xFe9C958d1A34adfdb78eBa95F8D546E5A946d0C6",
-        "fee_recipient": "0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3"
-      }
-    ]
+    "execute_micro_liquidation": {
+      "interval": 5,
+      "wait_timeout": 240,
+      "gas_limit": 2500000,
+      "fee_recipient": "0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3"
+    },
+    "execute_liquidation": {
+      "interval": 5,
+      "wait_timeout": 240,
+      "gas_limit": 2500000,
+      "fee_recipient": "0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3"
+    }
   },
   "addresses": {
     "MocMultiCollateralGuard": "0xAF9469A5E935890F981ECF2b6C14E6D45DA4A364",

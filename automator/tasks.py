@@ -1,13 +1,13 @@
 import decimal
 from web3 import Web3
+from web3.exceptions import Web3RPCError
 import datetime
 
-from .contracts import Multicall2, MocQueue, MocMultiCollateralGuard
+from .contracts import MocMultiCollateralGuard, MocCACoinbase, MocCARC20, PriceProvider
 
 from .base.main import ConnectionHelperBase
 from .tasks_manager import PendingTransactionsTasksManager, on_pending_transactions
 from .logger import log
-from .utils import aws_put_metric_heart_beat
 
 
 __VERSION__ = '1.0.5'
@@ -58,6 +58,24 @@ class Automator(PendingTransactionsTasksManager):
             max_priority_fee_per_gas=max_priority_fee_per_gas
         )
 
+    def is_valid_tp_price(self):
+        valid = True
+        for pp in self.contracts_loaded["PriceProviders"]:
+            price_item = pp.peek()
+            valid = price_item[1]
+            if not valid:
+                break
+        return valid
+
+    def is_valid_ac_coinbase_price(self):
+        valid = True
+        for pp in self.contracts_loaded["PriceProvidersACCoinbase"]:
+            price_item = pp.peek()
+            valid = price_item[1]
+            if not valid:
+                break
+        return valid
+
     @on_pending_transactions
     def execute(self, task=None, global_manager=None, task_result=None):
 
@@ -68,6 +86,11 @@ class Automator(PendingTransactionsTasksManager):
             # return if there are pending transactions
             if task_result.get('pending_transactions', None):
                 return task_result
+
+            # check if is valid price before send
+            if not self.is_valid_tp_price():
+                log.error("Task :: {0} :: Error not valid TP price provider!".format(task.task_name))
+                return
 
             info_transaction = self.info_tx()
 
@@ -111,6 +134,11 @@ class Automator(PendingTransactionsTasksManager):
             # return if there are pending transactions
             if task_result.get('pending_transactions', None):
                 return task_result
+
+            # check if is valid price before send
+            if not self.is_valid_tp_price():
+                log.error("Task :: {0} :: Error not valid TP price provider!".format(task.task_name))
+                return
 
             info_transaction = self.info_tx()
 
@@ -156,6 +184,16 @@ class Automator(PendingTransactionsTasksManager):
             if task_result.get('pending_transactions', None):
                 return task_result
 
+            # check if is valid price before send
+            if not self.is_valid_tp_price():
+                log.error("Task :: {0} :: Error not valid TP price provider!".format(task.task_name))
+                return
+
+            # check if is valid ac coinbase price before send
+            if not self.is_valid_ac_coinbase_price():
+                log.error("Task :: {0} :: Error not valid AC Coinbase price provider!".format(task.task_name))
+                return
+
             info_transaction = self.info_tx()
 
             try:
@@ -190,6 +228,10 @@ class Automator(PendingTransactionsTasksManager):
         return task_result
 
 
+MAX_AC_AVAILABLE = 2
+MAX_TP_RANGE = 4
+
+
 class AutomatorTasks(Automator):
 
     def __init__(self, config):
@@ -199,6 +241,7 @@ class AutomatorTasks(Automator):
 
         self.contracts_loaded = dict()
         self.contracts_addresses = dict()
+        self.moc_buckets_addresses = []
 
         # contract addresses
         self.load_contracts()
@@ -216,16 +259,74 @@ class AutomatorTasks(Automator):
 
         log.info("Getting addresses from Main Contract...")
 
+        log.info("MocMultiCollateralGuard using address: %s" % self.config['addresses']['MocMultiCollateralGuard'])
         # MocMultiCollateralGuard
         self.contracts_loaded["MocMultiCollateralGuard"] = MocMultiCollateralGuard(
             self.connection_helper.connection_manager,
             contract_address=self.config['addresses']['MocMultiCollateralGuard'])
         self.contracts_addresses['MocMultiCollateralGuard'] = self.contracts_loaded["MocMultiCollateralGuard"].address().lower()
 
-        # Multicall
-        self.contracts_loaded["Multicall2"] = Multicall2(
-            self.connection_helper.connection_manager,
-            contract_address=self.config['addresses']['Multicall2'])
+        # Reading MoC Buckets from Multi collateral Guard
+        self.moc_buckets_addresses = []
+        self.contracts_loaded['Moc'] = []
+        for i in range(MAX_AC_AVAILABLE):
+            try:
+                moc_bucket_address = self.contracts_loaded["MocMultiCollateralGuard"].buckets(i)
+            except Web3RPCError:
+                continue
+
+            contract_interface = MocCACoinbase
+            if self.config['collateral'][i]['type'] == 'rc20':
+                contract_interface = MocCARC20
+
+            log.info("MoC Bucket using address: %s" % moc_bucket_address)
+
+            moc_bucket = contract_interface(
+                self.connection_helper.connection_manager,
+                contract_address=moc_bucket_address)
+
+            self.contracts_loaded['Moc'].append(moc_bucket)
+            self.moc_buckets_addresses.append(moc_bucket_address)
+
+        # Get TP Price provider... in multi-collateral we have the assumption that all collateral
+        # have the same TPs, this why only watch the first collateral only
+
+        price_providers = []
+        bucket_index = 0
+        for i in range(MAX_TP_RANGE):
+            try:
+                tp_address = self.contracts_loaded["Moc"][bucket_index].tp_tokens(i)
+            except Web3RPCError:
+                continue
+            if not tp_address:
+                break
+            tp_index = self.contracts_loaded["Moc"][bucket_index].pegged_token_index(tp_address)
+            # result: tp_index = [index, enabled]
+            if not tp_index:
+                break
+            tp_item = self.contracts_loaded["Moc"][bucket_index].peg_container(tp_index[0])
+            # result: tp_item = [index, price provider]
+            price_providers.append(tp_item[1])
+
+        # load TP price providers
+        self.contracts_loaded["PriceProviders"] = []
+        for pp_address in price_providers:
+            log.info("Price Provider TP using address: %s" % pp_address)
+            pp = PriceProvider(
+                self.connection_helper.connection_manager,
+                contract_address=pp_address)
+            self.contracts_loaded["PriceProviders"].append(pp)
+
+        # Get AC Coinbase price provider if need it
+        self.contracts_loaded["PriceProvidersACCoinbase"] = []
+        for moc_bucket_addr in self.moc_buckets_addresses:
+            ac_coinbase_pp_address = self.contracts_loaded["MocMultiCollateralGuard"].ac_coinbase_price_provider(moc_bucket_addr)
+            if ac_coinbase_pp_address != "0x0000000000000000000000000000000000000000":
+                log.info("Price Provider AC Coinbase using address: %s" % ac_coinbase_pp_address)
+                pp = PriceProvider(
+                    self.connection_helper.connection_manager,
+                    contract_address=ac_coinbase_pp_address)
+                self.contracts_loaded["PriceProvidersACCoinbase"].append(pp)
 
     def schedule_tasks(self):
 
@@ -246,29 +347,28 @@ class AutomatorTasks(Automator):
         # Execute micro liquidation
         if 'execute_micro_liquidation' in self.config['tasks']:
             count = 0
-            for setting_micro_liquidation in self.config['tasks']['execute_micro_liquidation']:
-                log.info("Jobs add: 2. Execute micro liquidation: {0}".format(setting_micro_liquidation['MocBucket']))
-                interval = setting_micro_liquidation['interval']
+            for moc_bucket_addr in self.moc_buckets_addresses:
+                log.info("Jobs add: 2. Execute micro liquidation: {0}".format(moc_bucket_addr))
+                interval = self.config['tasks']['execute_micro_liquidation']['interval']
                 self.add_task(self.execute_micro_liquidation,
-                              args=[setting_micro_liquidation['MocBucket']],
+                              args=[moc_bucket_addr],
                               wait=interval,
                               timeout=180,
-                              task_name="2. Execute micro liquidation: {0}".format(setting_micro_liquidation['MocBucket']))
+                              task_name="2. Execute micro liquidation: {0}".format(moc_bucket_addr))
                 count += 1
 
         # Execute liquidation
         if 'execute_liquidation' in self.config['tasks']:
             count = 0
-            for setting_liquidation in self.config['tasks']['execute_liquidation']:
-                log.info("Jobs add: 3. Execute liquidation: {0}".format(
-                    setting_liquidation['MocBucket']))
-                interval = setting_liquidation['interval']
+            for moc_bucket_addr in self.moc_buckets_addresses:
+                log.info("Jobs add: 3. Execute liquidation: {0}".format(moc_bucket_addr))
+                interval = self.config['tasks']['execute_liquidation']['interval']
                 self.add_task(self.execute_liquidation,
-                              args=[setting_liquidation['MocBucket']],
+                              args=[moc_bucket_addr],
                               wait=interval,
                               timeout=180,
                               task_name="2. Execute liquidation: {0}".format(
-                                  setting_liquidation['MocBucket']))
+                                  moc_bucket_addr))
                 count += 1
 
         # Set max workers

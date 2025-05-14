@@ -10,7 +10,7 @@ from .tasks_manager import PendingTransactionsTasksManager, on_pending_transacti
 from .logger import log
 
 
-__VERSION__ = '1.0.5'
+__VERSION__ = '1.0.6'
 
 
 log.info("Starting Stable Protocol Queue Automator version {0}".format(__VERSION__))
@@ -228,10 +228,6 @@ class Automator(PendingTransactionsTasksManager):
         return task_result
 
 
-MAX_AC_AVAILABLE = 2
-MAX_TP_RANGE = 4
-
-
 class AutomatorTasks(Automator):
 
     def __init__(self, config):
@@ -269,17 +265,18 @@ class AutomatorTasks(Automator):
         # Reading MoC Buckets from Multi collateral Guard
         self.moc_buckets_addresses = []
         self.contracts_loaded['Moc'] = []
-        for i in range(MAX_AC_AVAILABLE):
+
+        for ca_index, ca in enumerate(self.config['collateral']):
             try:
-                moc_bucket_address = self.contracts_loaded["MocMultiCollateralGuard"].buckets(i)
+                moc_bucket_address = self.contracts_loaded["MocMultiCollateralGuard"].buckets(ca_index)
             except Web3RPCError:
                 continue
 
             contract_interface = MocCACoinbase
-            if self.config['collateral'][i]['type'] == 'rc20':
+            if ca['type'] == 'rc20':
                 contract_interface = MocCARC20
 
-            log.info("MoC Bucket using address: %s" % moc_bucket_address)
+            log.info("MoC Bucket ({0}) using address: {1}".format(ca['name'], moc_bucket_address))
 
             moc_bucket = contract_interface(
                 self.connection_helper.connection_manager,
@@ -293,9 +290,9 @@ class AutomatorTasks(Automator):
 
         price_providers = []
         bucket_index = 0
-        for i in range(MAX_TP_RANGE):
+        for tp_index, tp in enumerate(self.config['pegged']):
             try:
-                tp_address = self.contracts_loaded["Moc"][bucket_index].tp_tokens(i)
+                tp_address = self.contracts_loaded["Moc"][bucket_index].tp_tokens(tp_index)
             except Web3RPCError:
                 continue
             if not tp_address:
@@ -310,8 +307,9 @@ class AutomatorTasks(Automator):
 
         # load TP price providers
         self.contracts_loaded["PriceProviders"] = []
-        for pp_address in price_providers:
-            log.info("Price Provider TP using address: %s" % pp_address)
+        for pp_address_index, pp_address in enumerate(price_providers):
+            log.info("Price Provider TP ({0}) using address: {1}".format(
+                self.config['pegged'][pp_address_index]['name'], pp_address))
             pp = PriceProvider(
                 self.connection_helper.connection_manager,
                 contract_address=pp_address)
@@ -319,10 +317,11 @@ class AutomatorTasks(Automator):
 
         # Get AC Coinbase price provider if need it
         self.contracts_loaded["PriceProvidersACCoinbase"] = []
-        for moc_bucket_addr in self.moc_buckets_addresses:
+        for moc_bucket_addr_index, moc_bucket_addr in enumerate(self.moc_buckets_addresses):
             ac_coinbase_pp_address = self.contracts_loaded["MocMultiCollateralGuard"].ac_coinbase_price_provider(moc_bucket_addr)
             if ac_coinbase_pp_address != "0x0000000000000000000000000000000000000000":
-                log.info("Price Provider AC Coinbase using address: %s" % ac_coinbase_pp_address)
+                log.info("Price Provider AC Coinbase ({0}) using address: {1}".format(
+                    self.config['collateral'][moc_bucket_addr_index]['name'], ac_coinbase_pp_address))
                 pp = PriceProvider(
                     self.connection_helper.connection_manager,
                     contract_address=ac_coinbase_pp_address)

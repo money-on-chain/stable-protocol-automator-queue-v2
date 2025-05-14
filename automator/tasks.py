@@ -290,9 +290,9 @@ class AutomatorTasks(Automator):
 
         price_providers = []
         bucket_index = 0
-        for tp_index, tp in enumerate(self.config['pegged']):
+        for tp_i, tp in enumerate(self.config['pegged']):
             try:
-                tp_address = self.contracts_loaded["Moc"][bucket_index].tp_tokens(tp_index)
+                tp_address = self.contracts_loaded["Moc"][bucket_index].tp_tokens(tp_i)
             except Web3RPCError:
                 continue
             if not tp_address:
@@ -347,27 +347,34 @@ class AutomatorTasks(Automator):
         if 'execute_micro_liquidation' in self.config['tasks']:
             count = 0
             for moc_bucket_addr in self.moc_buckets_addresses:
-                log.info("Jobs add: 2. Execute micro liquidation: {0}".format(moc_bucket_addr))
+                log.info("Jobs add: 2. Execute micro liquidation: ({0}) {1}".format(
+                    self.config['collateral'][count]['name'], moc_bucket_addr)
+                )
                 interval = self.config['tasks']['execute_micro_liquidation']['interval']
                 self.add_task(self.execute_micro_liquidation,
                               args=[moc_bucket_addr],
                               wait=interval,
                               timeout=180,
-                              task_name="2. Execute micro liquidation: {0}".format(moc_bucket_addr))
+                              task_name="2. Execute micro liquidation: ({0}) {1}".format(
+                                  self.config['collateral'][count]['name'], moc_bucket_addr)
+                              )
                 count += 1
 
         # Execute liquidation
         if 'execute_liquidation' in self.config['tasks']:
             count = 0
             for moc_bucket_addr in self.moc_buckets_addresses:
-                log.info("Jobs add: 3. Execute liquidation: {0}".format(moc_bucket_addr))
+                log.info("Jobs add: 3. Execute liquidation: ({0}) {1}".format(
+                    self.config['collateral'][count]['name'], moc_bucket_addr)
+                )
                 interval = self.config['tasks']['execute_liquidation']['interval']
                 self.add_task(self.execute_liquidation,
                               args=[moc_bucket_addr],
                               wait=interval,
                               timeout=180,
-                              task_name="2. Execute liquidation: {0}".format(
-                                  moc_bucket_addr))
+                              task_name="2. Execute liquidation: ({0}) {1}".format(
+                                  self.config['collateral'][count]['name'], moc_bucket_addr)
+                              )
                 count += 1
 
         # Set max workers
